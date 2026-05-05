@@ -255,7 +255,8 @@ tbody tr:hover td{background:var(--surface2)}
   </div>
 </div>
 <script>
-let contratos=[],autoNum=1,hubSelected='';
+let contratos=JSON.parse(localStorage.getItem('contratos_ar')||'[]'),autoNum=1,hubSelected='';
+function guardarStorage(){localStorage.setItem('contratos_ar',JSON.stringify(contratos))}
 function hoy(){return new Date().toISOString().split('T')[0]}
 function fmtFecha(s){if(!s)return'—';const[y,m,d]=s.split('-');return d+'/'+m+'/'+y}
 function fmt(n,dec){return Number(n).toLocaleString('es-AR',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0})}
@@ -266,8 +267,10 @@ function toast(msg,tipo){const el=document.getElementById('toast');el.textConten
 function switchTab(name,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('pane-'+name).classList.add('active')}
 function selectHub(hub){hubSelected=hub;document.getElementById('f-hub').value=hub;['NBA','SUR','EERR'].forEach(h=>{document.getElementById('hub-'+h).className='hub-btn'+(h===hub?' sel-'+h.toLowerCase():'')});actualizarPreview()}
 (function(){
+  // recalculate autoNum from loaded contratos
+  if(contratos.length){const nums=contratos.map(c=>{const m=c.nro.match(/(\d+)$/);return m?parseInt(m[1]):0});autoNum=Math.max(...nums)+1}
   document.getElementById('f-fecha').value=hoy();
-  document.getElementById('f-nro').placeholder=padNum(1);
+  document.getElementById('f-nro').placeholder=padNum(autoNum);
   const d=new Date();
   document.getElementById('topbar-date').textContent=d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
 })();
@@ -306,13 +309,14 @@ function crearContrato(){
   if(tc<=0){toast('Ingresá el tipo de cambio','error');return}
   if(contratos.find(c=>c.nro===nro)){toast('N° de contrato ya existe','error');return}
   contratos.push({nro,cliente,cultivo,hub,tn,precio,tc,totalUSD,totalARS,fecha,entrega,obs});
+  guardarStorage();
   autoNum++;
   document.getElementById('f-nro').placeholder=padNum(autoNum);
   renderTodo();limpiarFormulario();
   toast('Contrato '+nro+' creado','success');
   switchTab('lista',document.querySelectorAll('.tab')[1]);
 }
-function eliminar(idx){if(!confirm('¿Eliminar contrato?'))return;contratos.splice(idx,1);renderTodo();toast('Contrato eliminado')}
+function eliminar(idx){if(!confirm('¿Eliminar contrato?'))return;contratos.splice(idx,1);guardarStorage();renderTodo();toast('Contrato eliminado')}
 function filtrar(){
   const fc=document.getElementById('filtro-cliente').value;
   const fcu=document.getElementById('filtro-cultivo').value;
@@ -376,6 +380,7 @@ function exportarCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+[h,...rows].map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8'}));a.download='contratos_'+hoy()+'.csv';a.click();toast('CSV exportado','success');
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarModal()});
+if(contratos.length){renderTodo()}
 </script>
 </body>
 </html>

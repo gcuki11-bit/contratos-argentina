@@ -313,11 +313,26 @@ function crearContrato(){
   switchTab('lista',document.querySelectorAll('.tab')[1]);
 }
 function eliminar(idx){if(!confirm('¿Eliminar contrato?'))return;contratos.splice(idx,1);renderTodo();toast('Contrato eliminado')}
-function renderTodo(){renderCards();renderTabla();actualizarMetricas();document.getElementById('tab-count').textContent=contratos.length?'('+contratos.length+')':''}
-function renderCards(){
+function filtrar(){
+  const fc=document.getElementById('filtro-cliente').value;
+  const fcu=document.getElementById('filtro-cultivo').value;
+  const filtered=contratos.filter(c=>(!fc||c.cliente===fc)&&(!fcu||c.cultivo===fcu));
+  renderCards(filtered);renderTabla(filtered);
+  const res=document.getElementById('filtro-resultado');
+  if(res) res.textContent=(fc||fcu)?filtered.length+' de '+contratos.length+' contratos':'';
+}
+function limpiarFiltros(){
+  document.getElementById('filtro-cliente').value='';
+  document.getElementById('filtro-cultivo').value='';
+  filtrar();
+}
+function renderTodo(){renderCards(contratos);renderTabla(contratos);actualizarMetricas();document.getElementById('tab-count').textContent=contratos.length?'('+contratos.length+')':'';
+filtrar()}
+function renderCards(data){
+  data=data||contratos;
   const list=document.getElementById('contract-list');
   if(!contratos.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📄</div><div class="empty-title">Sin contratos</div><div class="empty-sub">Creá el primero desde la pestaña anterior</div></div>';return}
-  list.innerHTML=contratos.map((c,i)=>'<div class="contract-card">'
+  list.innerHTML=data.map((c,i)=>'<div class="contract-card">'
     +'<div class="cc-header"><span class="cc-nro">'+c.nro+'</span><span class="cc-fecha">'+fmtFecha(c.fecha)+'</span></div>'
     +'<div class="cc-body"><div class="cc-left"><div class="cc-cliente">'+c.cliente+'</div>'
     +'<div class="cc-meta"><span class="htag '+hubClass(c.hub)+'">'+c.hub+'</span><span class="cc-dot"></span><span>'+c.cultivo+'</span><span class="cc-dot"></span><span>'+fmt(c.tn,0)+' TN</span></div></div>'
@@ -326,10 +341,11 @@ function renderCards(){
     +'<div class="cc-actions"><button class="btn-sm btn-ver" onclick="verContrato('+i+')">Ver</button><button class="btn-sm btn-del" onclick="eliminar('+i+')">Eliminar</button></div></div>'
     +'</div>').join('');
 }
-function renderTabla(){
+function renderTabla(data){
+  data=data||contratos;
   const tbody=document.getElementById('tabla-body');
-  if(!contratos.length){tbody.innerHTML='<tr><td colspan="11"><div class="table-empty">No hay contratos aún</div></td></tr>';return}
-  tbody.innerHTML=contratos.map((c,i)=>'<tr><td><span class="id-pill">'+c.nro+'</span></td><td class="mono-cell" style="color:var(--text2)">'+fmtFecha(c.fecha)+'</td><td style="font-weight:500">'+c.cliente+'</td><td>'+c.cultivo+'</td><td><span class="htag '+hubClass(c.hub)+'">'+c.hub+'</span></td><td class="mono-cell">'+fmt(c.tn,2)+'</td><td class="mono-cell">USD '+fmt(c.precio,2)+'</td><td class="mono-cell">'+fmt(c.tc,0)+'</td><td class="mono-cell" style="font-weight:600">USD '+fmt(c.totalUSD,2)+'</td><td class="mono-cell" style="font-weight:600">$ '+fmt(c.totalARS,0)+'</td><td><div style="display:flex;gap:5px"><button class="btn-sm btn-ver" onclick="verContrato('+i+')">Ver</button><button class="btn-sm btn-del" onclick="eliminar('+i+')">Eliminar</button></div></td></tr>').join('');
+  if(!data.length){tbody.innerHTML='<tr><td colspan="11"><div class="table-empty">No hay contratos aún</div></td></tr>';return}
+  tbody.innerHTML=data.map((c,i)=>'<tr><td><span class="id-pill">'+c.nro+'</span></td><td class="mono-cell" style="color:var(--text2)">'+fmtFecha(c.fecha)+'</td><td style="font-weight:500">'+c.cliente+'</td><td>'+c.cultivo+'</td><td><span class="htag '+hubClass(c.hub)+'">'+c.hub+'</span></td><td class="mono-cell">'+fmt(c.tn,2)+'</td><td class="mono-cell">USD '+fmt(c.precio,2)+'</td><td class="mono-cell">'+fmt(c.tc,0)+'</td><td class="mono-cell" style="font-weight:600">USD '+fmt(c.totalUSD,2)+'</td><td class="mono-cell" style="font-weight:600">$ '+fmt(c.totalARS,0)+'</td><td><div style="display:flex;gap:5px"><button class="btn-sm btn-ver" onclick="verContrato('+i+')">Ver</button><button class="btn-sm btn-del" onclick="eliminar('+i+')">Eliminar</button></div></td></tr>').join('');
 }
 function actualizarMetricas(){
   const tTN=contratos.reduce((s,c)=>s+Number(c.tn),0),tUSD=contratos.reduce((s,c)=>s+Number(c.totalUSD),0),tARS=contratos.reduce((s,c)=>s+Number(c.totalARS),0),last=contratos.length?contratos[contratos.length-1].tc:null;

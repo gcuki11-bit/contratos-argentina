@@ -151,6 +151,7 @@ tbody tr:hover td{background:var(--surface2)}
 }
 @media(max-width:380px){.form-row.c2,.form-row.c3{grid-template-columns:1fr}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="modal-overlay" id="modal-overlay">
@@ -188,6 +189,7 @@ tbody tr:hover td{background:var(--surface2)}
 <div class="tabs">
   <div class="tab active" onclick="switchTab('nuevo',this)">Nuevo contrato</div>
   <div class="tab" onclick="switchTab('lista',this)">Contratos <span id="tab-count"></span></div>
+  <div class="tab" onclick="switchTab('analytics',this)">Analytics</div>
 </div>
 <div class="main">
   <div class="metrics-grid">
@@ -253,6 +255,61 @@ tbody tr:hover td{background:var(--surface2)}
       </div>
     </div>
   </div>
+  <div class="pane" id="pane-analytics">
+
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header">
+        <div class="card-title">Filtrar análisis</div>
+      </div>
+      <div class="form-row c2" style="margin-bottom:0">
+        <div class="fg">
+          <label>Ver por</label>
+          <select id="chart-groupby" onchange="renderAnalytics()">
+            <option value="cliente">Cliente</option>
+            <option value="cultivo">Cultivo</option>
+            <option value="ambos">Cliente + Cultivo</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Métrica</label>
+          <select id="chart-metric" onchange="renderAnalytics()">
+            <option value="ars">Total ARS</option>
+            <option value="usd">Total USD</option>
+            <option value="tn">Toneladas</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header"><div class="card-title" id="chart-bar-title">Por cliente — Total ARS</div></div>
+      <div style="position:relative;height:260px"><canvas id="chart-bar"></canvas></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Distribución ARS</div></div>
+        <div style="position:relative;height:200px"><canvas id="chart-pie-ars"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Distribución TN</div></div>
+        <div style="position:relative;height:200px"><canvas id="chart-pie-tn"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Resumen</div></div>
+      <div id="analytics-table"></div>
+    </div>
+
+    <div class="empty-state" id="analytics-empty" style="display:none">
+      <div class="empty-icon">📊</div>
+      <div class="empty-title">Sin datos</div>
+      <div class="empty-sub">Creá contratos para ver el análisis</div>
+    </div>
+
+  </div>
+
 </div>
 <script>
 let contratos=JSON.parse(localStorage.getItem('contratos_ar')||'[]'),autoNum=1,hubSelected='';
@@ -264,7 +321,7 @@ function hubClass(h){return h==='NBA'?'h-nba':h==='SUR'?'h-sur':'h-eerr'}
 function padNum(n){return'CON-'+String(n).padStart(3,'0')}
 let tt;
 function toast(msg,tipo){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(tipo==='error'?' error':tipo==='success'?' success':'');clearTimeout(tt);tt=setTimeout(()=>el.className='toast',3000)}
-function switchTab(name,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('pane-'+name).classList.add('active')}
+function switchTab(name,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('pane-'+name).classList.add('active');if(name==='analytics')renderAnalytics()}
 function selectHub(hub){hubSelected=hub;document.getElementById('f-hub').value=hub;['NBA','SUR','EERR'].forEach(h=>{document.getElementById('hub-'+h).className='hub-btn'+(h===hub?' sel-'+h.toLowerCase():'')});actualizarPreview()}
 (function(){
   // recalculate autoNum from loaded contratos
@@ -381,6 +438,164 @@ function exportarCSV(){
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarModal()});
 if(contratos.length){renderTodo()}
+
+// ── ANALYTICS ──
+let chartBar=null,chartPieARS=null,chartPieTN=null;
+
+const PALETTE = [
+  '#18170F','#4A3AA0','#1A6B3A','#B42020','#7A4F00',
+  '#0A4080','#6B2080','#2A6B5A','#804020','#205080'
+];
+
+const PALETTE_LIGHT = [
+  'rgba(24,23,15,0.08)','rgba(74,58,160,0.08)','rgba(26,107,58,0.08)',
+  'rgba(180,32,32,0.08)','rgba(122,79,0,0.08)','rgba(10,64,128,0.08)',
+  'rgba(107,32,128,0.08)','rgba(42,107,90,0.08)','rgba(128,64,32,0.08)','rgba(32,80,128,0.08)'
+];
+
+function groupData(groupBy, metric){
+  const map={};
+  contratos.forEach(c=>{
+    const key = groupBy==='ambos' ? c.cliente+' / '+c.cultivo : groupBy==='cliente' ? c.cliente : c.cultivo;
+    if(!map[key]) map[key]={ars:0,usd:0,tn:0,count:0};
+    map[key].ars += Number(c.totalARS);
+    map[key].usd += Number(c.totalUSD);
+    map[key].tn  += Number(c.tn);
+    map[key].count++;
+  });
+  const labels=Object.keys(map);
+  const values=labels.map(l=>map[l][metric]);
+  const ars=labels.map(l=>map[l].ars);
+  const tn=labels.map(l=>map[l].tn);
+  const counts=labels.map(l=>map[l].count);
+  return{labels,values,ars,tn,counts,map};
+}
+
+function fmtMetric(val,metric){
+  if(metric==='ars') return '$ '+fmt(val,0);
+  if(metric==='usd') return 'USD '+fmt(val,0);
+  return fmt(val,2)+' TN';
+}
+
+function metricLabel(metric){
+  return metric==='ars'?'Total ARS':metric==='usd'?'Total USD':'Toneladas';
+}
+
+function renderAnalytics(){
+  const groupBy = document.getElementById('chart-groupby').value;
+  const metric  = document.getElementById('chart-metric').value;
+  const empty   = document.getElementById('analytics-empty');
+
+  if(!contratos.length){
+    empty.style.display='block';
+    ['chart-bar','chart-pie-ars','chart-pie-tn'].forEach(id=>{
+      document.getElementById(id).closest('.card').style.display='none';
+    });
+    document.querySelector('.card:has(#analytics-table)').style.display='none';
+    return;
+  }
+  empty.style.display='none';
+
+  const {labels,values,ars,tn,counts,map} = groupData(groupBy,metric);
+  const colors = labels.map((_,i)=>PALETTE[i%PALETTE.length]);
+  const colorsLight = labels.map((_,i)=>PALETTE_LIGHT[i%PALETTE_LIGHT.length]);
+
+  const groupLabel = groupBy==='ambos'?'Cliente + Cultivo':groupBy==='cliente'?'Cliente':'Cultivo';
+  document.getElementById('chart-bar-title').textContent = 'Por '+groupLabel+' — '+metricLabel(metric);
+
+  // ── Bar chart ──
+  if(chartBar) chartBar.destroy();
+  chartBar = new Chart(document.getElementById('chart-bar'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:metricLabel(metric),
+        data:values,
+        backgroundColor:colors,
+        borderColor:colors,
+        borderWidth:0,
+        borderRadius:6,
+        borderSkipped:false,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:ctx=>fmtMetric(ctx.parsed.y,metric)+' ('+counts[ctx.dataIndex]+' contratos)'
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:'IBM Plex Mono',size:11},color:'#A8A79E',maxRotation:30}},
+        y:{grid:{color:'#F0EFE9'},border:{display:false},ticks:{font:{family:'IBM Plex Mono',size:11},color:'#A8A79E',callback:v=>metric==='tn'?fmt(v,0)+' TN':metric==='usd'?'USD '+fmt(v,0):'$'+fmt(v,0)}}
+      }
+    }
+  });
+
+  // ── Pie ARS ──
+  if(chartPieARS) chartPieARS.destroy();
+  chartPieARS = new Chart(document.getElementById('chart-pie-ars'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:ars,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{family:'Inter',size:10},color:'#6B6A60',padding:8,boxWidth:10}},
+        tooltip:{callbacks:{label:ctx=>'$ '+fmt(ctx.parsed,0)}}
+      }
+    }
+  });
+
+  // ── Pie TN ──
+  if(chartPieTN) chartPieTN.destroy();
+  chartPieTN = new Chart(document.getElementById('chart-pie-tn'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:tn,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{family:'Inter',size:10},color:'#6B6A60',padding:8,boxWidth:10}},
+        tooltip:{callbacks:{label:ctx=>fmt(ctx.parsed,2)+' TN'}}
+      }
+    }
+  });
+
+  // ── Summary table ──
+  const totalARS=ars.reduce((a,b)=>a+b,0);
+  const totalTN=tn.reduce((a,b)=>a+b,0);
+  const totalVal=values.reduce((a,b)=>a+b,0);
+
+  document.getElementById('analytics-table').innerHTML =
+    '<div class="table-wrap"><table>'
+    +'<thead><tr><th>'+(groupBy==='ambos'?'Cliente / Cultivo':groupBy.charAt(0).toUpperCase()+groupBy.slice(1))+'</th><th>Contratos</th><th>'+metricLabel(metric)+'</th><th>%</th><th>TN</th><th>Avg TC</th></tr></thead>'
+    +'<tbody>'
+    +labels.map((l,i)=>{
+      const d=map[l];
+      const pct=totalVal>0?(values[i]/totalVal*100).toFixed(1):'0';
+      const avgTC=d.usd>0?fmt(d.ars/d.usd,0):'—';
+      return '<tr>'
+        +'<td style="font-weight:600">'+l+'</td>'
+        +'<td class="mono-cell" style="color:var(--text2)">'+d.count+'</td>'
+        +'<td class="mono-cell" style="font-weight:600">'+fmtMetric(values[i],metric)+'</td>'
+        +'<td><div style="display:flex;align-items:center;gap:6px"><div style="height:4px;width:'+Math.round(Number(pct))+'px;max-width:60px;background:'+colors[i]+';border-radius:2px"></div><span class="mono-cell" style="color:var(--text2)">'+pct+'%</span></div></td>'
+        +'<td class="mono-cell" style="color:var(--text2)">'+fmt(d.tn,0)+' TN</td>'
+        +'<td class="mono-cell" style="color:var(--text2)">'+avgTC+'</td>'
+        +'</tr>';
+    }).join('')
+    +'<tr style="border-top:2px solid var(--border2)">'
+    +'<td style="font-weight:700">TOTAL</td>'
+    +'<td class="mono-cell" style="font-weight:600">'+contratos.length+'</td>'
+    +'<td class="mono-cell" style="font-weight:700">'+fmtMetric(totalVal,metric)+'</td>'
+    +'<td class="mono-cell">100%</td>'
+    +'<td class="mono-cell" style="font-weight:600">'+fmt(totalTN,0)+' TN</td>'
+    +'<td></td>'
+    +'</tr>'
+    +'</tbody></table></div>';
+}
 </script>
 </body>
 </html>

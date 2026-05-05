@@ -204,8 +204,8 @@ tbody tr:hover td{background:var(--surface2)}
         <div class="fg"><label>Fecha de firma</label><input type="date" id="f-fecha"/></div>
       </div>
       <div class="form-row c2">
-        <div class="fg"><label>Cliente</label><input type="text" id="f-cliente" placeholder="Nombre del cliente" autocomplete="off"/></div>
-        <div class="fg"><label>Cultivo</label><input type="text" id="f-cultivo" placeholder="Soja, Maíz, Trigo..." autocomplete="off"/></div>
+        <div class="fg"><label>Cliente</label><select id="f-cliente"><option value="">Seleccionar cliente...</option><option>AGRO BAYER SRL</option><option>CARGILL S.AC.I</option><option>LDC ARGENTINA S.A</option><option>PIONEER ARGENTINA S.R.L</option><option>BUNGE ARGENTINA S.A</option><option>FUTUROS Y OPCIONES.COM S.A.</option><option>BOORMALT ARGENTINA SAS</option><option>CERFOLY DE ARGENTINA S.A.</option></select></div>
+        <div class="fg"><label>Cultivo</label><select id="f-cultivo"><option value="">Seleccionar cultivo...</option><option>Soja</option><option>Maíz</option><option>Trigo</option><option>Cebada</option><option>Girasol</option></select></div>
       </div>
       <div class="fg" style="margin-bottom:10px">
         <label>Hub</label>
@@ -233,10 +233,17 @@ tbody tr:hover td{background:var(--surface2)}
     </div>
   </div>
   <div class="pane" id="pane-lista">
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header" style="margin-bottom:0.75rem"><div class="card-title">Filtros</div><button class="btn btn-ghost" onclick="limpiarFiltros()">Limpiar</button></div>
+      <div class="form-row c2" style="margin-bottom:0">
+        <div class="fg"><label>Cliente</label><select id="filtro-cliente" onchange="filtrar()"><option value="">Todos</option><option>AGRO BAYER SRL</option><option>CARGILL S.AC.I</option><option>LDC ARGENTINA S.A</option><option>PIONEER ARGENTINA S.R.L</option><option>BUNGE ARGENTINA S.A</option><option>FUTUROS Y OPCIONES.COM S.A.</option><option>BOORMALT ARGENTINA SAS</option><option>CERFOLY DE ARGENTINA S.A.</option></select></div>
+        <div class="fg"><label>Cultivo</label><select id="filtro-cultivo" onchange="filtrar()"><option value="">Todos</option><option>Soja</option><option>Maíz</option><option>Trigo</option><option>Cebada</option><option>Girasol</option></select></div>
+      </div>
+    </div>
     <div class="contract-list" id="contract-list"></div>
     <div class="table-section">
       <div class="card">
-        <div class="card-header"><div class="card-title">Contratos de la sesión</div></div>
+        <div class="card-header"><div class="card-title">Contratos de la sesión</div><span id="filtro-resultado" style="font-size:12px;color:var(--text3)"></span></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>N°</th><th>Firma</th><th>Cliente</th><th>Cultivo</th><th>Hub</th><th>TN</th><th>USD/TN</th><th>TC</th><th>Total USD</th><th>Total ARS</th><th></th></tr></thead>

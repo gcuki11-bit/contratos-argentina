@@ -1,15 +1,358 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Contratos Agricolas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Contratos Agrícolas</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F7F6F2;--surface:#FFF;--surface2:#F0EFE9;--border:#E0DED6;--border2:#C8C6BC;
+  --text:#18170F;--text2:#6B6A60;--text3:#A8A79E;--accent:#18170F;
+  --green:#1A6B3A;--green-bg:#E4F4EC;--green-border:#B8E4CC;
+  --amber:#7A4F00;--amber-bg:#FEF3DC;--amber-border:#F0D898;
+  --purple:#4A3AA0;--purple-bg:#EDEAF8;--purple-border:#C8C0F0;
+  --red:#B42020;--red-bg:#FCEAEA;--red-border:#F0C0C0;
+  --blue:#0A4080;--blue-bg:#E4EEFA;--blue-border:#B0CCEE;
+  --r:10px;--r-lg:16px;--r-xl:20px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.25rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--shadow)}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-mark{width:34px;height:34px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;letter-spacing:-0.02em}
+.topbar-sub{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:6px}
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 1.25rem;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0}
+.tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+.main{max-width:780px;margin:0 auto;padding:1.25rem}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.1rem;box-shadow:var(--shadow)}
+.metric-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px}
+.metric-value{font-size:20px;font-weight:700;letter-spacing:-0.03em;font-family:'IBM Plex Mono',monospace}
+.metric-sub{font-size:10px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace}
+.accent-card{background:var(--accent);border-color:var(--accent)}
+.accent-card .metric-label{color:rgba(255,255,255,0.6)}
+.accent-card .metric-value{color:#fff}
+.accent-card .metric-sub{color:rgba(255,255,255,0.5)}
+.pane{display:none}.pane.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.25rem;box-shadow:var(--shadow);margin-bottom:1rem}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em}
+.form-row{display:grid;gap:10px;margin-bottom:10px}
+.form-row.c2{grid-template-columns:1fr 1fr}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;height:46px;padding:0 13px;font-size:16px;font-family:'Inter',sans-serif;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;transition:border-color 0.15s;appearance:none;-webkit-appearance:none}
+.fg select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6A60' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer}
+.fg textarea{height:auto;padding:12px 13px;resize:none;min-height:72px;line-height:1.5;font-size:15px}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px rgba(24,23,15,0.08)}
+.fg input[type="number"]{font-family:'IBM Plex Mono',monospace;font-size:15px}
+.input-wrap{position:relative}
+.input-prefix{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);font-family:'IBM Plex Mono',monospace;pointer-events:none}
+.input-wrap input{padding-left:28px}
+.divider{height:1px;background:var(--border);margin:1.1rem 0}
+.hub-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.hub-btn{height:46px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg);font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;transition:all 0.15s;color:var(--text2);letter-spacing:0.05em}
+.hub-btn:active{transform:scale(0.97)}
+.hub-btn.sel-nba{background:var(--purple-bg);border-color:var(--purple-border);color:var(--purple)}
+.hub-btn.sel-sur{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
+.hub-btn.sel-eerr{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber)}
+.preview{background:linear-gradient(135deg,#F8F7F3,#F0EEE8);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.1rem;margin-top:0.5rem}
+.preview-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)}
+.preview-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em}
+.preview-id{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--surface);border:1px solid var(--border);padding:3px 9px;border-radius:5px;color:var(--text2);font-weight:500}
+.prow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;gap:8px}
+.prow-label{color:var(--text2);flex-shrink:0}
+.prow-value{font-weight:600;text-align:right;color:var(--text)}
+.ptotals{border-top:1px solid var(--border2);margin-top:10px;padding-top:10px;display:flex;flex-direction:column;gap:4px}
+.ptotal-row{display:flex;justify-content:space-between;align-items:baseline}
+.ptotal-row span:first-child{font-size:12px;color:var(--text2)}
+.ptotal-usd span:last-child{font-size:16px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.ptotal-ars span:last-child{font-size:22px;font-weight:700;letter-spacing:-0.03em;font-family:'IBM Plex Mono',monospace}
+.preview-empty{text-align:center;color:var(--text3);font-size:13px;padding:1.75rem 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border-radius:var(--r);cursor:pointer;transition:all 0.15s;border:1.5px solid transparent;white-space:nowrap}
+.btn:active{transform:scale(0.97)}
+.btn-primary{width:100%;height:52px;background:var(--accent);color:#fff;border-color:var(--accent);font-size:15px;margin-top:12px;border-radius:var(--r-lg);box-shadow:0 2px 8px rgba(24,23,15,0.25)}
+.btn-primary:active{box-shadow:none}
+.btn-ghost{background:transparent;color:var(--text2);border-color:var(--border2);height:36px;font-size:13px}
+.btn-outline{background:transparent;color:var(--text);border-color:var(--border2);height:36px;font-size:13px}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:var(--r);background:var(--surface2);border:1px solid var(--border);color:var(--text2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.htag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.04em}
+.h-nba{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.h-sur{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.h-eerr{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.contract-list{display:flex;flex-direction:column;gap:10px}
+.contract-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.1rem;box-shadow:var(--shadow)}
+.cc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.cc-nro{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px}
+.cc-fecha{font-size:11px;color:var(--text3)}
+.cc-body{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cc-cliente{font-size:16px;font-weight:700;letter-spacing:-0.01em;margin-bottom:3px}
+.cc-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);flex-wrap:wrap}
+.cc-dot{width:3px;height:3px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.cc-right{text-align:right;flex-shrink:0;margin-left:12px}
+.cc-ars{font-size:15px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:-0.02em}
+.cc-usd{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px}
+.cc-footer{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border)}
+.cc-tn{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace}
+.cc-actions{display:flex;gap:6px}
+.btn-sm{height:32px;padding:0 12px;font-size:12px;font-weight:600;border-radius:7px;border:1.5px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.btn-sm:active{transform:scale(0.95)}
+.btn-ver{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.btn-del{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;padding:8px 10px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:10px;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+.mono-cell{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.id-pill{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:4px;color:var(--text2)}
+.table-empty{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:13px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:1rem;right:1rem;background:var(--text);color:#fff;padding:13px 18px;border-radius:var(--r-lg);font-size:14px;font-weight:500;text-align:center;opacity:0;transform:translateY(12px);transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:#C0392B}
+.toast.success{background:#1A7A40}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,8,0.6);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:1.5rem;padding-bottom:calc(1.5rem + env(safe-area-inset-bottom));width:100%;max-height:88vh;display:flex;flex-direction:column;gap:1rem;box-shadow:0 -8px 32px rgba(0,0,0,0.15)}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto -0.5rem}
+.modal-header{display:flex;justify-content:space-between;align-items:center}
+.modal-header h2{font-size:16px;font-weight:700}
+.modal-actions{display:flex;gap:8px}
+.contract-text{font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.85;white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.1rem;overflow-y:auto;flex:1;color:var(--text)}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.empty-sub{font-size:13px}
+@media(min-width:640px){
+  .main{padding:1.5rem 2rem}
+  .metrics-grid{grid-template-columns:repeat(4,1fr);gap:12px}
+  .contract-list{display:none}
+  .table-section{display:block}
+  .modal-overlay{align-items:center;padding:1.5rem}
+  .modal{border-radius:var(--r-xl);max-width:560px;padding-bottom:1.5rem}
+  .modal-handle{display:none}
+  .toast{left:auto;right:1.5rem;bottom:1.5rem;max-width:340px;text-align:left}
+  .tabs{padding:0 2rem}
+  .topbar{padding:0 2rem}
+}
+@media(max-width:639px){
+  .table-section{display:none}
+  .form-row.c3{grid-template-columns:1fr 1fr}
+  .metrics-grid .metric-card:nth-child(3){display:none}
+}
+@media(max-width:380px){.form-row.c2,.form-row.c3{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2>Contrato</h2>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="copiarContrato()">Copiar</button>
+        <button class="btn btn-ghost" onclick="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+    <div class="contract-text" id="contract-text-content"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mark">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="2" y="10" width="3" height="6" rx="1" fill="white"/>
+        <rect x="7.5" y="6" width="3" height="10" rx="1" fill="white"/>
+        <rect x="13" y="2" width="3" height="14" rx="1" fill="white"/>
+      </svg>
+    </div>
+    <div>
+      <div class="topbar-title">Contratos AR</div>
+      <div class="topbar-sub" id="topbar-date"></div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-ghost" onclick="exportarCSV()">CSV</button>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('nuevo',this)">Nuevo contrato</div>
+  <div class="tab" onclick="switchTab('lista',this)">Contratos <span id="tab-count"></span></div>
+</div>
+<div class="main">
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-label">Contratos</div><div class="metric-value" id="m-count">0</div></div>
+    <div class="metric-card accent-card"><div class="metric-label">Total ARS</div><div class="metric-value" id="m-ars">$ 0</div><div class="metric-sub" id="m-tc-ref"></div></div>
+    <div class="metric-card"><div class="metric-label">Toneladas</div><div class="metric-value" id="m-tn">0 TN</div></div>
+    <div class="metric-card"><div class="metric-label">Total USD</div><div class="metric-value" id="m-usd">USD 0</div></div>
+  </div>
+  <div class="pane active" id="pane-nuevo">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Datos del contrato</div></div>
+      <div class="form-row c2">
+        <div class="fg"><label>N° de contrato</label><input type="text" id="f-nro" placeholder="CON-001" autocomplete="off"/></div>
+        <div class="fg"><label>Fecha de firma</label><input type="date" id="f-fecha"/></div>
+      </div>
+      <div class="form-row c2">
+        <div class="fg"><label>Cliente</label><input type="text" id="f-cliente" placeholder="Nombre del cliente" autocomplete="off"/></div>
+        <div class="fg"><label>Cultivo</label><input type="text" id="f-cultivo" placeholder="Soja, Maíz, Trigo..." autocomplete="off"/></div>
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <label>Hub</label>
+        <div class="hub-selector">
+          <button class="hub-btn" id="hub-NBA" onclick="selectHub('NBA')">NBA</button>
+          <button class="hub-btn" id="hub-SUR" onclick="selectHub('SUR')">SUR</button>
+          <button class="hub-btn" id="hub-EERR" onclick="selectHub('EERR')">EERR</button>
+        </div>
+        <input type="hidden" id="f-hub"/>
+      </div>
+      <div class="form-row c3">
+        <div class="fg"><label>Toneladas (TN)</label><input type="number" id="f-tn" placeholder="0" min="0" step="0.01"/></div>
+        <div class="fg"><label>Precio USD/TN</label><div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="f-precio" placeholder="0.00" min="0" step="0.01"/></div></div>
+        <div class="fg"><label>Tipo de cambio</label><input type="number" id="f-tc" placeholder="1250" min="0" step="0.01"/></div>
+      </div>
+      <div class="form-row c2">
+        <div class="fg"><label>Fecha de entrega</label><input type="date" id="f-entrega"/></div>
+        <div class="fg"><label>Observaciones</label><input type="text" id="f-obs" placeholder="Notas opcionales..."/></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Vista previa</div></div>
+      <div class="preview" id="preview-panel"><div class="preview-empty">📋 Completá los campos para ver el detalle</div></div>
+      <button class="btn btn-primary" id="btn-crear" onclick="crearContrato()">Confirmar y crear contrato</button>
+    </div>
+  </div>
+  <div class="pane" id="pane-lista">
+    <div class="contract-list" id="contract-list"></div>
+    <div class="table-section">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Contratos de la sesión</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>N°</th><th>Firma</th><th>Cliente</th><th>Cultivo</th><th>Hub</th><th>TN</th><th>USD/TN</th><th>TC</th><th>Total USD</th><th>Total ARS</th><th></th></tr></thead>
+            <tbody id="tabla-body"><tr><td colspan="11"><div class="table-empty">No hay contratos aún</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
-const SUPABASE_URL='https://kspfopathfapvqbypsbv.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzcGZvcGF0aGZhcHZxYnlwc2J2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4ODkwODcsImV4cCI6MjA5MzQ2NTA4N30.WB2CuGsR_EspQyojpm0YBkYAUCXRlrASqyprfog7Jvk';
-fetch(SUPABASE_URL+'/rest/v1/contratos?limit=1',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}).then(r=>r.json()).then(d=>document.body.innerHTML='<h2>CONEXION OK - '+JSON.stringify(d)+'</h2>').catch(e=>document.body.innerHTML='<h2>ERROR: '+e+'</h2>');
+let contratos=[],autoNum=1,hubSelected='';
+function hoy(){return new Date().toISOString().split('T')[0]}
+function fmtFecha(s){if(!s)return'—';const[y,m,d]=s.split('-');return d+'/'+m+'/'+y}
+function fmt(n,dec){return Number(n).toLocaleString('es-AR',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0})}
+function hubClass(h){return h==='NBA'?'h-nba':h==='SUR'?'h-sur':'h-eerr'}
+function padNum(n){return'CON-'+String(n).padStart(3,'0')}
+let tt;
+function toast(msg,tipo){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(tipo==='error'?' error':tipo==='success'?' success':'');clearTimeout(tt);tt=setTimeout(()=>el.className='toast',3000)}
+function switchTab(name,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('pane-'+name).classList.add('active')}
+function selectHub(hub){hubSelected=hub;document.getElementById('f-hub').value=hub;['NBA','SUR','EERR'].forEach(h=>{document.getElementById('hub-'+h).className='hub-btn'+(h===hub?' sel-'+h.toLowerCase():'')});actualizarPreview()}
+(function(){
+  document.getElementById('f-fecha').value=hoy();
+  document.getElementById('f-nro').placeholder=padNum(1);
+  const d=new Date();
+  document.getElementById('topbar-date').textContent=d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
+})();
+function calcular(){const tn=parseFloat(document.getElementById('f-tn').value)||0,precio=parseFloat(document.getElementById('f-precio').value)||0,tc=parseFloat(document.getElementById('f-tc').value)||0;return{tn,precio,tc,totalUSD:tn*precio,totalARS:tn*precio*tc}}
+function actualizarPreview(){
+  const cliente=document.getElementById('f-cliente').value.trim(),cultivo=document.getElementById('f-cultivo').value.trim(),hub=hubSelected;
+  const nro=document.getElementById('f-nro').value.trim()||document.getElementById('f-nro').placeholder;
+  const fecha=document.getElementById('f-fecha').value,entrega=document.getElementById('f-entrega').value,obs=document.getElementById('f-obs').value.trim();
+  const{tn,precio,tc,totalUSD,totalARS}=calcular();
+  const panel=document.getElementById('preview-panel');
+  if(!cliente&&!cultivo&&!hub&&tn===0){panel.innerHTML='<div class="preview-empty">📋 Completá los campos para ver el detalle</div>';return}
+  const pARS=tc>0?'$ '+fmt(precio*tc,2)+'/TN':'—';
+  panel.innerHTML='<div class="preview-header"><span class="preview-title">Detalle</span><span class="preview-id">'+nro+'</span></div>'
+    +(cliente?'<div class="prow"><span class="prow-label">Cliente</span><span class="prow-value">'+cliente+'</span></div>':'')
+    +(cultivo?'<div class="prow"><span class="prow-label">Cultivo</span><span class="prow-value">'+cultivo+'</span></div>':'')
+    +(hub?'<div class="prow"><span class="prow-label">Hub</span><span class="prow-value"><span class="htag '+hubClass(hub)+'">'+hub+'</span></span></div>':'')
+    +(tn>0?'<div class="prow"><span class="prow-label">Toneladas</span><span class="prow-value">'+fmt(tn,2)+' TN</span></div>':'')
+    +(precio>0?'<div class="prow"><span class="prow-label">Precio/TN</span><span class="prow-value">USD '+fmt(precio,2)+' · '+pARS+'</span></div>':'')
+    +(tc>0?'<div class="prow"><span class="prow-label">TC</span><span class="prow-value">$'+fmt(tc,0)+'/USD</span></div>':'')
+    +(fecha?'<div class="prow"><span class="prow-label">Firma</span><span class="prow-value">'+fmtFecha(fecha)+'</span></div>':'')
+    +(entrega?'<div class="prow"><span class="prow-label">Entrega</span><span class="prow-value">'+fmtFecha(entrega)+'</span></div>':'')
+    +(obs?'<div class="prow"><span class="prow-label">Obs.</span><span class="prow-value" style="font-size:12px">'+obs+'</span></div>':'')
+    +'<div class="ptotals"><div class="ptotal-row ptotal-usd"><span>Total USD</span><span>USD '+fmt(totalUSD,2)+'</span></div><div class="ptotal-row ptotal-ars"><span>Total ARS</span><span>$ '+fmt(totalARS,2)+'</span></div></div>';
+}
+['f-nro','f-cliente','f-cultivo','f-tn','f-precio','f-tc','f-fecha','f-entrega','f-obs'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',actualizarPreview);el.addEventListener('change',actualizarPreview)}});
+function crearContrato(){
+  const cliente=document.getElementById('f-cliente').value.trim(),cultivo=document.getElementById('f-cultivo').value.trim(),hub=hubSelected;
+  const nro=document.getElementById('f-nro').value.trim()||padNum(autoNum);
+  const fecha=document.getElementById('f-fecha').value||hoy(),entrega=document.getElementById('f-entrega').value,obs=document.getElementById('f-obs').value.trim();
+  const{tn,precio,tc,totalUSD,totalARS}=calcular();
+  if(!cliente){toast('Ingresá el cliente','error');return}
+  if(!cultivo){toast('Ingresá el cultivo','error');return}
+  if(!hub){toast('Seleccioná un Hub','error');return}
+  if(tn<=0){toast('Ingresá las toneladas','error');return}
+  if(precio<=0){toast('Ingresá el precio USD','error');return}
+  if(tc<=0){toast('Ingresá el tipo de cambio','error');return}
+  if(contratos.find(c=>c.nro===nro)){toast('N° de contrato ya existe','error');return}
+  contratos.push({nro,cliente,cultivo,hub,tn,precio,tc,totalUSD,totalARS,fecha,entrega,obs});
+  autoNum++;
+  document.getElementById('f-nro').placeholder=padNum(autoNum);
+  renderTodo();limpiarFormulario();
+  toast('Contrato '+nro+' creado','success');
+  switchTab('lista',document.querySelectorAll('.tab')[1]);
+}
+function eliminar(idx){if(!confirm('¿Eliminar contrato?'))return;contratos.splice(idx,1);renderTodo();toast('Contrato eliminado')}
+function renderTodo(){renderCards();renderTabla();actualizarMetricas();document.getElementById('tab-count').textContent=contratos.length?'('+contratos.length+')':''}
+function renderCards(){
+  const list=document.getElementById('contract-list');
+  if(!contratos.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📄</div><div class="empty-title">Sin contratos</div><div class="empty-sub">Creá el primero desde la pestaña anterior</div></div>';return}
+  list.innerHTML=contratos.map((c,i)=>'<div class="contract-card">'
+    +'<div class="cc-header"><span class="cc-nro">'+c.nro+'</span><span class="cc-fecha">'+fmtFecha(c.fecha)+'</span></div>'
+    +'<div class="cc-body"><div class="cc-left"><div class="cc-cliente">'+c.cliente+'</div>'
+    +'<div class="cc-meta"><span class="htag '+hubClass(c.hub)+'">'+c.hub+'</span><span class="cc-dot"></span><span>'+c.cultivo+'</span><span class="cc-dot"></span><span>'+fmt(c.tn,0)+' TN</span></div></div>'
+    +'<div class="cc-right"><div class="cc-ars">$ '+fmt(c.totalARS,0)+'</div><div class="cc-usd">USD '+fmt(c.totalUSD,0)+'</div></div></div>'
+    +'<div class="cc-footer"><span class="cc-tn">TC: $'+fmt(c.tc,0)+' · USD '+fmt(c.precio,2)+'/TN</span>'
+    +'<div class="cc-actions"><button class="btn-sm btn-ver" onclick="verContrato('+i+')">Ver</button><button class="btn-sm btn-del" onclick="eliminar('+i+')">Eliminar</button></div></div>'
+    +'</div>').join('');
+}
+function renderTabla(){
+  const tbody=document.getElementById('tabla-body');
+  if(!contratos.length){tbody.innerHTML='<tr><td colspan="11"><div class="table-empty">No hay contratos aún</div></td></tr>';return}
+  tbody.innerHTML=contratos.map((c,i)=>'<tr><td><span class="id-pill">'+c.nro+'</span></td><td class="mono-cell" style="color:var(--text2)">'+fmtFecha(c.fecha)+'</td><td style="font-weight:500">'+c.cliente+'</td><td>'+c.cultivo+'</td><td><span class="htag '+hubClass(c.hub)+'">'+c.hub+'</span></td><td class="mono-cell">'+fmt(c.tn,2)+'</td><td class="mono-cell">USD '+fmt(c.precio,2)+'</td><td class="mono-cell">'+fmt(c.tc,0)+'</td><td class="mono-cell" style="font-weight:600">USD '+fmt(c.totalUSD,2)+'</td><td class="mono-cell" style="font-weight:600">$ '+fmt(c.totalARS,0)+'</td><td><div style="display:flex;gap:5px"><button class="btn-sm btn-ver" onclick="verContrato('+i+')">Ver</button><button class="btn-sm btn-del" onclick="eliminar('+i+')">Eliminar</button></div></td></tr>').join('');
+}
+function actualizarMetricas(){
+  const tTN=contratos.reduce((s,c)=>s+Number(c.tn),0),tUSD=contratos.reduce((s,c)=>s+Number(c.totalUSD),0),tARS=contratos.reduce((s,c)=>s+Number(c.totalARS),0),last=contratos.length?contratos[contratos.length-1].tc:null;
+  document.getElementById('m-count').textContent=contratos.length;
+  document.getElementById('m-tn').textContent=fmt(tTN,0)+' TN';
+  document.getElementById('m-usd').textContent='USD '+fmt(tUSD,0);
+  document.getElementById('m-ars').textContent='$'+fmt(tARS,0);
+  document.getElementById('m-tc-ref').textContent=last?'TC $'+fmt(last,0):'';
+}
+function limpiarFormulario(){
+  ['f-nro','f-cliente','f-cultivo','f-tn','f-precio','f-tc','f-entrega','f-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-hub').value='';document.getElementById('f-fecha').value=hoy();
+  hubSelected='';['NBA','SUR','EERR'].forEach(h=>document.getElementById('hub-'+h).className='hub-btn');
+  actualizarPreview();
+}
+function generarTextoContrato(c){
+  const pARS=(Number(c.precio)*Number(c.tc)).toFixed(2);
+  return 'CONTRATO DE COMPRAVENTA DE GRANOS\n'+'='.repeat(54)+'\n\nN° de contrato   : '+c.nro+'\nFecha de firma   : '+fmtFecha(c.fecha)+'\nFecha de entrega : '+(c.entrega?fmtFecha(c.entrega):'A convenir')+'\n\n'+'-'.repeat(54)+'\nPARTES\n'+'-'.repeat(54)+'\nCliente          : '+c.cliente+'\nHub de operacion : '+c.hub+'\n\n'+'-'.repeat(54)+'\nDETALLE DE LA OPERACION\n'+'-'.repeat(54)+'\nCultivo          : '+c.cultivo+'\nCantidad         : '+fmt(c.tn,2)+' toneladas (TN)\nPrecio por TN    : USD '+fmt(c.precio,2)+' / ARS $ '+fmt(Number(pARS),2)+'\nTipo de cambio   : 1 USD = ARS $ '+fmt(c.tc,2)+'\n\n'+'-'.repeat(54)+'\nTOTALES\n'+'-'.repeat(54)+'\nTotal en USD     : USD '+fmt(c.totalUSD,2)+'\nTotal en ARS     : ARS $ '+fmt(c.totalARS,2)+'\n\n'+'-'.repeat(54)+'\n'+(c.obs?'OBSERVACIONES\n'+'-'.repeat(54)+'\n'+c.obs+'\n\n'+'-'.repeat(54)+'\n':'')+'Las partes prestan conformidad con los terminos\ny condiciones detallados en el presente contrato.\n\n\nFirma vendedor : ___________________________   Fecha: ___________\n\n\nFirma comprador: ___________________________   Fecha: ___________\n';
+}
+function verContrato(idx){document.getElementById('contract-text-content').textContent=generarTextoContrato(contratos[idx]);document.getElementById('modal-overlay').classList.add('open')}
+function cerrarModal(){document.getElementById('modal-overlay').classList.remove('open')}
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)cerrarModal()});
+function copiarContrato(){navigator.clipboard.writeText(document.getElementById('contract-text-content').textContent).then(()=>{const b=event.target,o=b.textContent;b.textContent='Copiado ✓';setTimeout(()=>b.textContent=o,2000)})}
+function exportarCSV(){
+  if(!contratos.length){toast('No hay contratos','error');return}
+  const h=['N°','Firma','Entrega','Cliente','Cultivo','Hub','TN','USD/TN','TC','Total USD','Total ARS','Obs'];
+  const rows=contratos.map(c=>[c.nro,fmtFecha(c.fecha),fmtFecha(c.entrega),'"'+c.cliente+'"','"'+c.cultivo+'"',c.hub,Number(c.tn).toFixed(2),Number(c.precio).toFixed(2),Number(c.tc).toFixed(2),Number(c.totalUSD).toFixed(2),Number(c.totalARS).toFixed(2),'"'+(c.obs||'')+'"']);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+[h,...rows].map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8'}));a.download='contratos_'+hoy()+'.csv';a.click();toast('CSV exportado','success');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarModal()});
 </script>
 </body>
 </html>
